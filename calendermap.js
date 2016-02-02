@@ -12,6 +12,34 @@ var day = d3.time.format("%w"),
 	  format = function(d){ return [formatSub(d[0]), d[1]]},
 	  parseDate = d3.time.format("%Y-%m-%d").parse;
 
+function wrap(text, width) {
+    text.each(function() {
+        var text = d3.select(this),
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            y = text.attr("y"),
+            dy = parseFloat(text.attr("dy")),
+            tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+        while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+
+            }
+
+        }
+
+    });
+
+}
+
 // converts is back to date string
 // check this in init code
 
@@ -19,7 +47,7 @@ var color = d3.scale.linear().range(["white", '#002b53'])
     .domain([0, 1])
 
 var svg = d3.select(".calender-map").selectAll("svg")
-    .data([[2013, 't1'], [2013, 't2'], [2013, 't3'] ])
+    .data([[2013, 't1', 'AFR 21 RHDCE-s'], [2013, 't2', 'AFR 42 RHDCE-s'], [2013, 't3', 'AFR 21 RHDCE-K'], [2013, 't4', 'AFR 21 DCEK'], [2013, 't5', 'AFR 42 DCEK'] ])
   .enter().append("svg")
     .attr("width", '100%')
     .attr("data-height", '0.5678')
@@ -29,9 +57,9 @@ var svg = d3.select(".calender-map").selectAll("svg")
     .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
 svg.append("text")
-    .attr("transform", "translate(-38," + cellSize * 3.5 + ")rotate(-90)")
-    .style("text-anchor", "middle")
-    .text(function(d) { return d[1]; });
+    .attr("transform", "translate(-125," + (cellSize * 4) + ")")
+//    .style("text-anchor", "left")
+    .text(function(d) { return d[2]; });
 
 for (var i=0; i<7; i++)
 {
@@ -39,7 +67,7 @@ svg.append("text")
     .attr("transform", "translate(-5," + cellSize*(i+1) + ")")
     .style("text-anchor", "end")
     .attr("dy", "-.25em")
-    .text(function(d) { return week_days[i]; }); 
+    .text(function(d) { return week_days[i]; });
 }
 
 function mkDateList(data) {
@@ -51,7 +79,7 @@ function mkDateList(data) {
     }
 //     for (d in dates) {
 // //        console.log(d);
-        
+
     //     }
     //console.log(ret);
     return ret;
@@ -130,7 +158,7 @@ d3.json("testDiscard.json", function(error, json) {
     // data is {date:dataset:val}
     rect.filter(function(d) { return d[0] in json && d[1] in json[d[0]]; })
         .attr("fill", function(d) { return color(json[d[0]][d[1]][0]); })
-	  .attr("data-title", function(d) { return "value : "+json[d[0]][d[1]][1]});
+	  .attr("data-title", function(d) { return d[0] + ": " + json[d[0]][d[1]][1]});
 	$("rect").tooltip({container: 'body', html: true, placement:'top'});
 });
 
